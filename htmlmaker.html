@@ -1,0 +1,154 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tiny HTML Maker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom scrollbar for the text area */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f8fafc; 
+            border-radius: 6px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 6px;
+            border: 2px solid #f8fafc;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 h-screen flex flex-col font-sans overflow-hidden">
+    
+    <!-- Top Navigation Bar -->
+    <header class="bg-white border-b border-slate-200 px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-between shrink-0 gap-4">
+        <div class="flex items-center gap-2">
+            <div class="bg-blue-100 p-2 rounded-lg">
+                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+                </svg>
+            </div>
+            <h1 class="text-xl font-bold text-slate-800 tracking-tight">Tiny HTML Maker</h1>
+        </div>
+        
+        <div class="flex items-center gap-3 w-full sm:w-auto">
+            <div class="relative flex-1 sm:flex-none">
+                <input 
+                    type="text" 
+                    id="filename-input" 
+                    value="index.html" 
+                    class="w-full sm:w-48 border border-slate-300 rounded-lg pl-3 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-shadow" 
+                    placeholder="filename.html"
+                >
+            </div>
+            <button 
+                onclick="exportHtmlFile()" 
+                class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shrink-0"
+            >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                </svg>
+                Export File
+            </button>
+        </div>
+    </header>
+    
+    <!-- Main Editor Area -->
+    <main class="flex-1 p-4 sm:p-6 flex flex-col min-h-0 bg-slate-50 relative">
+        <!-- Toast Notification (Hidden by default) -->
+        <div id="toast" class="absolute top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white px-4 py-2 rounded-full text-sm font-medium opacity-0 transition-opacity duration-300 pointer-events-none z-10 flex items-center gap-2 shadow-lg">
+            <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            File downloaded successfully!
+        </div>
+
+        <div class="flex-1 relative flex flex-col bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="bg-slate-100 border-b border-slate-200 px-4 py-2 flex items-center gap-2">
+                <div class="w-3 h-3 rounded-full bg-red-400"></div>
+                <div class="w-3 h-3 rounded-full bg-amber-400"></div>
+                <div class="w-3 h-3 rounded-full bg-green-400"></div>
+                <span class="ml-2 text-xs font-medium text-slate-500 uppercase tracking-wider">Editor</span>
+            </div>
+            <textarea 
+                id="code-input" 
+                class="flex-1 w-full bg-transparent p-4 font-mono text-sm leading-relaxed text-slate-700 resize-none focus:outline-none selection:bg-blue-100" 
+                placeholder="<!-- Paste your HTML, CSS, and JS code here... -->&#10;&#10;<!DOCTYPE html>&#10;<html lang='en'>&#10;<head>&#10;    <title>My Awesome Page</title>&#10;</head>&#10;<body>&#10;    <h1>Hello, World!</h1>&#10;</body>&#10;</html>"
+                spellcheck="false"
+            ></textarea>
+        </div>
+    </main>
+
+    <script>
+        function exportHtmlFile() {
+            // 1. Get the content from the text area
+            const codeContent = document.getElementById('code-input').value;
+            
+            // 2. Get and validate the filename
+            let filename = document.getElementById('filename-input').value.trim();
+            if (!filename) {
+                filename = 'index.html';
+            }
+            // Ensure it has a .html extension
+            if (!filename.toLowerCase().endsWith('.html')) {
+                filename += '.html';
+            }
+
+            // 3. Create a Blob (Binary Large Object) containing the HTML text
+            const blob = new Blob([codeContent], { type: 'text/html' });
+            
+            // 4. Create a temporary URL for the Blob
+            const url = URL.createObjectURL(blob);
+            
+            // 5. Create a hidden <a> tag and click it to trigger the download
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = filename;
+            
+            // Append to body, click, and remove (required for Firefox compatibility)
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            
+            // 6. Clean up the URL object
+            URL.revokeObjectURL(url);
+
+            // 7. Show success toast notification
+            showToast();
+        }
+
+        function showToast() {
+            const toast = document.getElementById('toast');
+            toast.style.opacity = '1';
+            
+            // Hide the toast after 2.5 seconds
+            setTimeout(() => {
+                toast.style.opacity = '0';
+            }, 2500);
+        }
+
+        // Add support for the 'Tab' key to insert spaces instead of changing focus
+        document.getElementById('code-input').addEventListener('keydown', function(e) {
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const start = this.selectionStart;
+                const end = this.selectionEnd;
+                
+                // Insert 4 spaces
+                this.value = this.value.substring(0, start) + "    " + this.value.substring(end);
+                
+                // Move cursor
+                this.selectionStart = this.selectionEnd = start + 4;
+            }
+        });
+    </script>
+</body>
+</html>
+
