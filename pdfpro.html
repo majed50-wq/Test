@@ -42,21 +42,40 @@ button{font-family:inherit}
 
 /* ---------- App header ---------- */
 .appbar{
-  position:sticky; top:0; z-index:30; background:rgba(232,239,237,.86);
+  position:sticky; top:0; z-index:50; background:rgba(232,239,237,.86);
   backdrop-filter:saturate(150%) blur(10px);
   border-bottom:1px solid var(--line);
+  padding-top:env(safe-area-inset-top);
 }
-.appbar-in{max-width:560px; margin:0 auto; padding:14px 16px; display:flex; align-items:center; gap:12px; min-height:60px}
+.appbar-in{max-width:560px; margin:0 auto;
+  padding:14px max(16px,env(safe-area-inset-left)) 14px max(16px,env(safe-area-inset-right));
+  display:flex; align-items:center; gap:12px; min-height:60px}
 .wordmark{font-family:"DM Serif Display",serif; font-size:25px; letter-spacing:.2px; line-height:1; color:var(--ink)}
 .wordmark .dot{color:var(--gold)}
 .tagline{margin-left:auto; font-size:12px; color:var(--muted); text-align:right; max-width:170px}
 .back{
   display:inline-flex; align-items:center; justify-content:center;
-  width:42px; height:42px; margin-left:-8px; border-radius:12px;
+  width:44px; height:44px; margin-left:-6px; border-radius:12px;
   background:var(--surface); border:1px solid var(--line); color:var(--ink); box-shadow:var(--shadow-sm);
+  position:relative; z-index:2; cursor:pointer; flex:0 0 auto;
 }
+.back:active{transform:scale(.94); background:color-mix(in srgb,var(--teal) 6%,#fff)}
 .back svg{width:22px;height:22px}
 .page-title{font-family:"DM Serif Display",serif; font-size:24px; line-height:1.05}
+
+/* ---------- Thumb-reachable floating Back (mobile) ---------- */
+.backfab{
+  position:fixed; z-index:60; display:none;
+  left:max(16px,env(safe-area-inset-left));
+  bottom:calc(18px + env(safe-area-inset-bottom));
+  align-items:center; gap:8px; padding:0 18px 0 14px; height:52px;
+  border-radius:26px; border:none; cursor:pointer;
+  background:var(--teal); color:#fff; font:inherit; font-size:15px; font-weight:600;
+  box-shadow:0 8px 24px rgba(11,107,96,.34);
+}
+.backfab.show{display:inline-flex}
+.backfab:active{transform:scale(.96); background:var(--teal-press)}
+.backfab svg{width:22px; height:22px}
 
 /* ---------- Home ---------- */
 .hero{padding:26px 2px 18px}
@@ -308,6 +327,12 @@ textarea#ocrText{width:100%; min-height:220px; border:1.5px solid var(--line); b
     <!-- filled by router -->
   </div>
 </header>
+
+<!-- Thumb-reachable Back button (mobile) -->
+<button class="backfab" id="backFab" aria-label="Back to tools">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+  <span>Back</span>
+</button>
 
 <main class="wrap">
 
@@ -711,6 +736,7 @@ textarea#ocrText{width:100%; min-height:220px; border:1.5px solid var(--line); b
     let h=(location.hash||"#home").slice(1);
     if(VIEWS.indexOf(h)<0) h="home";
     VIEWS.forEach(v=>$("view-"+v).classList.toggle("active", v===h));
+    const fab=$("backFab"); if(fab) fab.classList.toggle("show", h!=="home");
     const bar=$("appbarIn");
     if(h==="home"){
       bar.innerHTML='<span class="wordmark">PDF&nbsp;Studio<span class="dot">.</span></span><span class="tagline">Fast, private PDF tools</span>';
@@ -720,6 +746,23 @@ textarea#ocrText{width:100%; min-height:220px; border:1.5px solid var(--line); b
     window.scrollTo(0,0);
   }
   window.addEventListener("hashchange", route);
+
+  // Floating Back button -> go home
+  (function(){
+    const fab=$("backFab");
+    if(fab) fab.addEventListener("click", ()=>{ location.hash="#home"; });
+    // Edge swipe-right from left edge = back (mobile)
+    let sx=0, sy=0, track=false;
+    window.addEventListener("touchstart",(e)=>{
+      const t=e.touches[0]; track = (t.clientX < 28) && ((location.hash||"#home")!=="#home");
+      sx=t.clientX; sy=t.clientY;
+    }, {passive:true});
+    window.addEventListener("touchend",(e)=>{
+      if(!track) return; track=false;
+      const t=e.changedTouches[0];
+      if(t.clientX - sx > 70 && Math.abs(t.clientY - sy) < 60) location.hash="#home";
+    }, {passive:true});
+  })();
 
   function wireDrop(dropId, inputId, onFiles){
     const drop=$(dropId), input=$(inputId);
