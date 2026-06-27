@@ -13606,14 +13606,18 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
   function b64FromBytes(bytes){ var bin="",CH=0x8000; for(var i=0;i<bytes.length;i+=CH){ bin+=String.fromCharCode.apply(null, bytes.subarray(i,i+CH)); } return btoa(bin); }
   function bytesFromB64(b){ var bin=atob(b),a=new Uint8Array(bin.length); for(var i=0;i<bin.length;i++) a[i]=bin.charCodeAt(i); return a; }
   function deflateStr(s){
-    var cs=new CompressionStream("deflate-raw"); var w=cs.writable.getWriter();
-    w.write(new TextEncoder().encode(s)); w.close();
-    return new Response(cs.readable).arrayBuffer().then(function(buf){ return b64FromBytes(new Uint8Array(buf)); });
+    return Promise.resolve().then(function(){
+      var cs=new CompressionStream("deflate-raw"); var w=cs.writable.getWriter();
+      w.write(new TextEncoder().encode(s)); w.close();
+      return new Response(cs.readable).arrayBuffer().then(function(buf){ return b64FromBytes(new Uint8Array(buf)); });
+    });
   }
   function inflateStr(b){
-    var ds=new DecompressionStream("deflate-raw"); var w=ds.writable.getWriter();
-    w.write(bytesFromB64(b)); w.close();
-    return new Response(ds.readable).arrayBuffer().then(function(buf){ return new TextDecoder().decode(buf); });
+    return Promise.resolve().then(function(){
+      var ds=new DecompressionStream("deflate-raw"); var w=ds.writable.getWriter();
+      w.write(bytesFromB64(b)); w.close();
+      return new Response(ds.readable).arrayBuffer().then(function(buf){ return new TextDecoder().decode(buf); });
+    });
   }
   function encodeSig(desc){
     var json=JSON.stringify({t:desc.type,s:desc.sdp});
@@ -13815,7 +13819,11 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
              '<textarea id="offOut" class="codebox" readonly>'+code+'</textarea>'+
              '<div class="rowbtns"><button class="btn alt" id="hShare">Share</button><button class="btn ghost" id="hCopy">Copy</button></div>'+
            '</details>'+
-           '<p class="tiny">2. Then scan their reply code:</p>',
+           '<p class="tiny">2. Then scan their reply code, or paste it:</p>'+
+           '<details><summary>paste reply code</summary>'+
+             '<textarea id="ansIn" class="codebox" placeholder="Paste reply code"></textarea>'+
+             '<div class="rowbtns"><button class="btn ghost" id="hPaste">Paste</button><button class="btn alt" id="hConn">Connect</button></div>'+
+           '</details>',
       actions:[
         {label:"\uD83D\uDCF7 Scan reply code", cls:"", fn:function(){ scanFor("host"); }},
         {label:"Cancel", cls:"ghost", fn:function(){ netReset(); closeNet(); }}
@@ -13823,16 +13831,8 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
       after:function(){
         var s=$("hShare"); if(s) s.addEventListener("click", function(){ shareCode("offOut"); });
         var c=$("hCopy"); if(c) c.addEventListener("click", function(){ copyEl("offOut"); });
-        // paste-reply fallback inside details
-        var det=$("netCard").querySelector("details");
-        if(det){
-          var box=document.createElement("div");
-          box.innerHTML='<p class="tiny">or paste their reply:</p><textarea id="ansIn" class="codebox" placeholder="Paste reply code"></textarea>'+
-            '<div class="rowbtns"><button class="btn ghost" id="hPaste">Paste</button><button class="btn alt" id="hConn">Connect</button></div>';
-          $("netCard").insertBefore(box, $("__na0"));
-          var p=$("hPaste"); if(p) p.addEventListener("click", function(){ pasteInto("ansIn"); });
-          var cn=$("hConn"); if(cn) cn.addEventListener("click", function(){ netHostConnect(); });
-        }
+        var p=$("hPaste"); if(p) p.addEventListener("click", function(){ pasteInto("ansIn"); });
+        var cn=$("hConn"); if(cn) cn.addEventListener("click", function(){ netHostConnect(); });
       }
     });
   }
