@@ -203,14 +203,21 @@
   a.hidden-dl{display:none}
 
   /* Engine selector */
-  .engine-pick{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+  .eng-lbl{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--mut);margin:0 0 9px;font-weight:600}
+  .engine-pick{display:grid;grid-template-columns:repeat(auto-fit,minmax(138px,1fr));gap:10px;margin-bottom:8px}
+  .engine-pick.local-row{grid-template-columns:1fr;margin-bottom:16px}
   .eng-opt{
     border:1px solid var(--line2);border-radius:var(--r-s);background:rgba(0,0,0,.18);
-    padding:12px 12px;cursor:pointer;text-align:center;transition:.15s;display:flex;flex-direction:column;gap:3px;align-items:center;
+    padding:12px 10px 11px;cursor:pointer;text-align:center;transition:.15s;display:flex;flex-direction:column;gap:3px;align-items:center;
   }
   .eng-opt .et{font-weight:600;font-size:14px;color:var(--ink)}
   .eng-opt .es{font-size:11.5px;color:var(--mut)}
   .eng-opt .ei{font-family:'DM Serif Display',serif;font-size:22px;line-height:1}
+  .eng-opt .eng-key{margin-top:7px;font-size:11.5px;color:var(--teal);text-decoration:none;border-top:1px solid var(--line2);
+    padding-top:7px;width:100%;display:block;transition:.15s}
+  .eng-opt .eng-key:hover{color:var(--gold);text-decoration:underline}
+  .eng-opt .eng-key.none{color:var(--mut);cursor:default}
+  .eng-opt .eng-key.none:hover{color:var(--mut);text-decoration:none}
   .eng-opt.on{border-color:var(--gold);background:linear-gradient(180deg,rgba(231,200,115,.14),rgba(231,200,115,.04));box-shadow:0 6px 16px rgba(231,200,115,.14)}
   .eng-opt.on .ei{color:var(--gold)}
   .eng-opt.on.local{border-color:var(--teal);background:linear-gradient(180deg,rgba(22,179,164,.14),rgba(22,179,164,.04));box-shadow:0 6px 16px rgba(22,179,164,.14)}
@@ -305,27 +312,50 @@
 
   <!-- Settings -->
   <div class="card">
+    <div class="eng-lbl">AI Vision engine &middot; pick any one, switch if it fails</div>
     <div class="engine-pick">
-      <div class="eng-opt on" id="engVision" data-eng="vision">
+      <div class="eng-opt on" id="engGroq" data-eng="groq">
         <div class="ei">&#9673;</div>
-        <div class="et">AI Vision</div>
-        <div class="es">Reads the photo directly &middot; most accurate</div>
+        <div class="et">Groq</div>
+        <div class="es">Llama 4 Scout</div>
+        <a class="eng-key" href="https://console.groq.com/keys" target="_blank" rel="noopener">Get free key &#8599;</a>
       </div>
+      <div class="eng-opt" id="engGemini" data-eng="gemini">
+        <div class="ei">&#9672;</div>
+        <div class="et">Google Gemini</div>
+        <div class="es">Gemini 2.5 Flash</div>
+        <a class="eng-key" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Get free key &#8599;</a>
+      </div>
+      <div class="eng-opt" id="engOpenrouter" data-eng="openrouter">
+        <div class="ei">&#9678;</div>
+        <div class="et">OpenRouter</div>
+        <div class="es">Free vision model</div>
+        <a class="eng-key" href="https://openrouter.ai/settings/keys" target="_blank" rel="noopener">Get free key &#8599;</a>
+      </div>
+      <div class="eng-opt" id="engMistral" data-eng="mistral">
+        <div class="ei">&#9679;</div>
+        <div class="et">Mistral</div>
+        <div class="es">Pixtral vision</div>
+        <a class="eng-key" href="https://console.mistral.ai/api-keys" target="_blank" rel="noopener">Get free key &#8599;</a>
+      </div>
+    </div>
+    <div class="engine-pick local-row">
       <div class="eng-opt local" id="engLocal" data-eng="local">
         <div class="ei">&#9881;</div>
         <div class="et">On-device</div>
         <div class="es">Works offline &middot; no key needed</div>
+        <span class="eng-key none">No account needed</span>
       </div>
     </div>
 
     <div class="keyrow" id="keyRow">
-      <label class="fld" for="apiKey">Groq API key (kept on this device only)</label>
+      <label class="fld" for="apiKey" id="keyLabel">Groq API key (kept on this device only)</label>
       <div class="kr-in">
         <input class="ti" id="apiKey" type="password" placeholder="gsk_..." autocomplete="off" spellcheck="false">
         <button class="btn ghost" id="saveKey" type="button">Save key</button>
         <span class="saved" id="keySaved">&#10003; saved</span>
       </div>
-      <div class="hint">Free key from <a href="https://console.groq.com/keys" target="_blank" rel="noopener">console.groq.com/keys</a>. Used to read each badge with Llama&nbsp;4 Scout vision.</div>
+      <div class="hint" id="keyHint">Free key from <a href="https://console.groq.com/keys" target="_blank" rel="noopener">console.groq.com/keys</a>. Each key stays on this device only.</div>
     </div>
 
     <div class="controls">
@@ -408,7 +438,7 @@
 <div class="modal" id="keyModal">
   <div class="box">
     <h3>Add your AI key</h3>
-    <p>AI Vision reads each badge with Llama&nbsp;4 Scout. Paste a free Groq key from <a href="https://console.groq.com/keys" target="_blank" rel="noopener">console.groq.com/keys</a>. It stays on this device.</p>
+    <p id="modalText">AI Vision reads each badge for you. Paste a free key for the selected engine, or switch to on-device.</p>
     <input class="ti" id="modalKey" type="password" placeholder="gsk_..." autocomplete="off" spellcheck="false" style="direction:ltr;font-family:ui-monospace,monospace">
     <div class="mrow">
       <button class="btn ghost" id="modalLocal" type="button">Use on-device instead</button>
@@ -425,14 +455,66 @@
   var worker = null;
   var workerReady = false;
   var uid = 0;
-  var engine = 'vision'; // 'vision' (Llama 4 Scout) or 'local' (on-device)
+  var engine = 'groq';   // 'groq' | 'gemini' | 'openrouter' | 'mistral' | 'local'
   var pairs = [];        // booklet imposition sheets
 
   var $ = function(id){ return document.getElementById(id); };
 
-  // ---------- AI key (Groq) ----------
-  function getKey(){ try{ return localStorage.getItem('groq_api_key')||''; }catch(e){ return ''; } }
-  function setKey(v){ try{ if(v) localStorage.setItem('groq_api_key',v); else localStorage.removeItem('groq_api_key'); }catch(e){} }
+  // ---------- AI Vision providers ----------
+  // Each cloud engine is an alternative: if one is down, rate-limited, or your
+  // key is rejected, switch to another with one tap. Groq, OpenRouter and
+  // Mistral share an OpenAI-style endpoint; Gemini uses its own format.
+  var PROVIDERS = {
+    groq: {
+      label:'Groq', sub:'Llama 4 Scout', kind:'openai',
+      endpoint:'https://api.groq.com/openai/v1/chat/completions',
+      model:'meta-llama/llama-4-scout-17b-16e-instruct',
+      keyUrl:'https://console.groq.com/keys', keyHost:'console.groq.com/keys',
+      prefix:'gsk_...', pace:2000
+    },
+    gemini: {
+      label:'Google Gemini', sub:'Gemini 2.5 Flash', kind:'gemini',
+      model:'gemini-2.5-flash',
+      keyUrl:'https://aistudio.google.com/apikey', keyHost:'aistudio.google.com/apikey',
+      prefix:'AIza...', pace:1500
+    },
+    openrouter: {
+      label:'OpenRouter', sub:'Free vision model', kind:'openai',
+      endpoint:'https://openrouter.ai/api/v1/chat/completions',
+      model:'meta-llama/llama-3.2-11b-vision-instruct:free',
+      keyUrl:'https://openrouter.ai/settings/keys', keyHost:'openrouter.ai/settings/keys',
+      prefix:'sk-or-...', pace:2500
+    },
+    mistral: {
+      label:'Mistral', sub:'Pixtral vision', kind:'openai',
+      endpoint:'https://api.mistral.ai/v1/chat/completions',
+      model:'pixtral-12b-2409',
+      keyUrl:'https://console.mistral.ai/api-keys', keyHost:'console.mistral.ai/api-keys',
+      prefix:'key...', pace:1500
+    }
+  };
+  function prov(p){ return PROVIDERS[p||engine]; }
+  function isCloud(p){ return !!PROVIDERS[p||engine]; }
+
+  // ---------- AI key (per provider, kept on this device) ----------
+  function keyStore(p){ return 'vision_key_'+(p||engine); }
+  function getKey(p){
+    p = p || engine;
+    try{
+      var v = localStorage.getItem(keyStore(p));
+      if(!v && p==='groq') v = localStorage.getItem('groq_api_key'); // migrate old key
+      return v || '';
+    }catch(e){ return ''; }
+  }
+  function setKey(v, p){
+    p = p || engine;
+    try{
+      if(v) localStorage.setItem(keyStore(p), v); else localStorage.removeItem(keyStore(p));
+      if(p==='groq'){ if(v) localStorage.setItem('groq_api_key', v); else localStorage.removeItem('groq_api_key'); }
+    }catch(e){}
+  }
+  function getProviderPref(){ try{ return localStorage.getItem('vision_provider')||'groq'; }catch(e){ return 'groq'; } }
+  function setProviderPref(p){ try{ localStorage.setItem('vision_provider', p); }catch(e){} }
 
   // ---------- Toast ----------
   var toastT;
@@ -733,10 +815,11 @@
     return step(0);
   }
 
-  // ---------- AI VISION ENGINE (Llama 4 Scout via Groq) ----------
-  // Mirrors the validated approach: cut a bottom-centre band out of the page
-  // first, downscale it, then let the vision model read the digits. Cropping
-  // before sending focuses the model on the badge and keeps requests light.
+  // ---------- AI VISION ENGINE (multi-provider) ----------
+  // Cut a bottom-centre band out of the page, downscale it, then let a vision
+  // model read the digits. Cropping focuses the model on the badge and keeps
+  // requests light. Any of the cloud providers can read the same crop, so a
+  // failure on one is recoverable by switching engines.
   function cloudCrop(img){
     var W=img.naturalWidth, H=img.naturalHeight;
     var cropW=W*0.60, cropH=H*0.25, cropX=W*0.20, cropY=H*0.75;
@@ -760,36 +843,80 @@
 
   function delay(ms){ return new Promise(function(r){ setTimeout(r,ms); }); }
 
-  // Returns the model's raw reply (digits). Retries on rate-limit / transient errors.
-  function llamaVision(dataUrl, retries){
-    if(retries===undefined) retries=2;
-    var key=getKey();
-    if(!key) return Promise.reject(new Error('no-key'));
+  var VISION_PROMPT = 'Look at the badge shape at the bottom of this image and read the single page number inside it. Reply with ONLY the integer digits (for example 1, 2, 16). No words, no punctuation.';
+
+  // Normalise transport failures so every provider speaks the same error codes.
+  function netCatch(e){
+    if(e && (e.name==='TypeError' || /Failed to fetch|NetworkError|load failed/i.test(e.message||''))) throw new Error('network');
+    throw e;
+  }
+
+  // OpenAI-compatible providers (Groq, OpenRouter, Mistral).
+  function callOpenAI(p, key, dataUrl){
     var payload={
-      model:'meta-llama/llama-4-scout-17b-16e-instruct',
-      temperature:0.0,
+      model:p.model, temperature:0.0,
       messages:[{ role:'user', content:[
-        { type:'text', text:'Look at the badge shape at the bottom of this image and read the single page number inside it. Reply with ONLY the integer digits (for example 1, 2, 16). No words, no punctuation.' },
+        { type:'text', text:VISION_PROMPT },
         { type:'image_url', image_url:{ url:dataUrl } }
       ]}]
     };
-    return fetch('https://api.groq.com/openai/v1/chat/completions',{
+    return fetch(p.endpoint,{
       method:'POST',
       headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+key },
       body:JSON.stringify(payload)
     }).then(function(res){
-      return res.json().then(function(data){
+      return res.json().catch(function(){ return {}; }).then(function(data){
         if(!res.ok){
-          if(res.status===429 && retries>0) return delay(3000).then(function(){ return llamaVision(dataUrl, retries-1); });
-          if(res.status===401) throw new Error('bad-key');
-          throw new Error((data.error&&data.error.message)||('server-'+res.status));
+          if(res.status===429) throw new Error('rate');
+          if(res.status===401 || res.status===403) throw new Error('bad-key');
+          throw new Error((data.error&&(data.error.message||data.error))||('server-'+res.status));
         }
         return (data.choices&&data.choices[0]&&data.choices[0].message&&data.choices[0].message.content||'').trim();
       });
-    }).catch(function(e){
+    }).catch(netCatch);
+  }
+
+  // Google Gemini (generateContent format, key in query string).
+  function callGemini(p, key, dataUrl){
+    var m=/^data:(.*?);base64,(.*)$/.exec(dataUrl);
+    var mime=m?m[1]:'image/jpeg', b64=m?m[2]:dataUrl;
+    var url='https://generativelanguage.googleapis.com/v1beta/models/'+p.model+':generateContent?key='+encodeURIComponent(key);
+    var payload={
+      contents:[{ parts:[ { text:VISION_PROMPT }, { inline_data:{ mime_type:mime, data:b64 } } ] }],
+      generationConfig:{ temperature:0.0 }
+    };
+    return fetch(url,{
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body:JSON.stringify(payload)
+    }).then(function(res){
+      return res.json().catch(function(){ return {}; }).then(function(data){
+        if(!res.ok){
+          if(res.status===429) throw new Error('rate');
+          if(res.status===400 || res.status===401 || res.status===403) throw new Error('bad-key');
+          throw new Error((data.error&&data.error.message)||('server-'+res.status));
+        }
+        var t='';
+        try{ t=data.candidates[0].content.parts.map(function(x){ return x.text||''; }).join(''); }catch(e){}
+        return (t||'').trim();
+      });
+    }).catch(netCatch);
+  }
+
+  // Reads the active provider. Returns the model's raw reply (digits).
+  // Retries on rate-limit / transient errors; re-throws bad-key immediately.
+  function visionRead(dataUrl, retries){
+    if(retries===undefined) retries=2;
+    var p=prov();
+    if(!p) return Promise.reject(new Error('no-provider'));
+    var key=getKey();
+    if(!key) return Promise.reject(new Error('no-key'));
+    var call = (p.kind==='gemini') ? callGemini(p,key,dataUrl) : callOpenAI(p,key,dataUrl);
+    return call.catch(function(e){
       if(e.message==='bad-key') throw e;
-      if(e.name==='TypeError' || /Failed to fetch/i.test(e.message)) throw new Error('network');
-      if(retries>0) return delay(2000).then(function(){ return llamaVision(dataUrl, retries-1); });
+      if((e.message==='rate' || e.message==='network' || /^server-5/.test(e.message)) && retries>0){
+        return delay(e.message==='rate'?3000:2000).then(function(){ return visionRead(dataUrl, retries-1); });
+      }
       throw e;
     });
   }
@@ -829,7 +956,7 @@
   function scanAll(){
     var pend=items.filter(function(it){ return it._img; });
     if(!pend.length){ toast('Add some images first'); return; }
-    if(engine==='vision'){
+    if(isCloud()){
       if(!getKey()){ openKeyModal(); return; }
       scanVision(pend);
     } else {
@@ -869,16 +996,17 @@
     });
   }
 
-  // ---- AI Vision (Llama 4 Scout) ----
+  // ---- AI Vision (active cloud provider) ----
   function scanVision(pend){
+    var p=prov(), pname=p?p.label:'AI Vision', pace=p?p.pace:2000;
     $('scanBtn').disabled=true;
-    setEngine('busy','AI Vision reading pages...');
+    setEngine('busy', pname+' reading pages...');
     liveShow(true); liveUpdate('', '-', true);
     var maxExpect=pend.length;
     var i=0, stop=false;
     function finish(msg){
       progress(null); liveShow(false);
-      setEngine('on', stop?'AI Vision paused':'AI Vision ready');
+      setEngine('on', stop?(pname+' paused'):(pname+' ready'));
       render(); updateBar(); $('scanBtn').disabled=false;
       if(msg) toast(msg);
       if(!stop) maybeBuildBooklet();
@@ -887,23 +1015,23 @@
       if(stop) { finish(); return; }
       if(i>=pend.length){ finish('Scan complete'); return; }
       var it=pend[i];
-      progress(0.05 + 0.95*(i/pend.length), 'AI reading page '+(i+1)+' of '+pend.length);
+      progress(0.05 + 0.95*(i/pend.length), pname+' reading page '+(i+1)+' of '+pend.length);
       var crop=cloudCrop(it._img);
       liveUpdate(crop, '...', true);
       it.located=true;
-      llamaVision(crop).then(function(reply){
+      visionRead(crop).then(function(reply){
         var num=extractNumber(reply, maxExpect);
         it.num=num; it.conf=num?100:0;
         it.status = num ? 'ok' : 'bad';
         liveUpdate(crop, num||'?', !num);
         i++; render();
-        // Groq llama-4-scout free tier ~30 req/min -> ~2s spacing
-        if(i<pend.length) setTimeout(next, 2000); else next();
+        if(i<pend.length) setTimeout(next, pace); else next();
       }).catch(function(e){
         stop=true; liveUpdate(crop, '!', true);
-        if(e.message==='bad-key'){ render(); finish(); openKeyModal('That key was rejected. Paste a valid Groq key.'); return; }
-        if(e.message==='network'){ render(); finish('Could not reach Groq - check connection or switch to On-device'); return; }
-        render(); finish('AI error: '+e.message);
+        if(e.message==='bad-key'){ render(); finish(); openKeyModal('That '+pname+' key was rejected. Paste a valid key or switch engine.'); return; }
+        if(e.message==='rate'){ render(); finish(pname+' is rate-limited - wait a moment or switch to another engine'); return; }
+        if(e.message==='network'){ render(); finish('Could not reach '+pname+' - check connection or switch engine'); return; }
+        render(); finish(pname+' error: '+e.message+' - try another engine');
       });
     }
     next();
@@ -1356,6 +1484,12 @@
 
   // ---------- Settings modal ----------
   function openKeyModal(msg){
+    var p=prov();
+    if(p){
+      $('modalText').innerHTML='AI Vision reads each badge with <b>'+p.label+'</b> ('+p.sub+'). Paste a free key from '+
+        '<a href="'+p.keyUrl+'" target="_blank" rel="noopener">'+p.keyHost+'</a>, or switch to another engine. Keys stay on this device.';
+      $('modalKey').placeholder=p.prefix;
+    }
     $('modalKey').value=getKey();
     $('keyModal').classList.add('show');
     setTimeout(function(){ $('modalKey').focus(); }, 50);
@@ -1402,24 +1536,48 @@
   $('pad').addEventListener('change', function(){ updateNamesOnly(); });
 
   // ---- Engine selector ----
-  function selectEngine(type){
-    engine = (type==='local') ? 'local' : 'vision';
-    $('engVision').classList.toggle('on', engine==='vision');
-    $('engLocal').classList.toggle('on', engine==='local');
-    $('keyRow').classList.toggle('show', engine==='vision');
-    $('scanBtn').textContent = engine==='vision' ? 'Scan with AI Vision' : 'Scan numbers';
-    setEngine(engine==='vision'?'':'', engine==='vision'
-      ? 'AI Vision reads each badge directly - highest accuracy'
-      : 'Finds the badge on-device - works offline');
+  var CLOUD_IDS=['groq','gemini','openrouter','mistral'];
+  function syncKeyRow(){
+    var p=prov();
+    if(!p) return;
+    $('keyLabel').textContent=p.label+' API key (kept on this device only)';
+    $('apiKey').placeholder=p.prefix;
+    $('keyHint').innerHTML='Free key from <a href="'+p.keyUrl+'" target="_blank" rel="noopener">'+p.keyHost+'</a>. Each key is stored separately on this device only.';
+    $('apiKey').value=getKey();
+    $('keySaved').classList.remove('show');
   }
-  $('engVision').addEventListener('click', function(){ selectEngine('vision'); });
+  function selectEngine(type){
+    engine = PROVIDERS[type] ? type : 'local';
+    CLOUD_IDS.forEach(function(id){
+      $('eng'+id.charAt(0).toUpperCase()+id.slice(1)).classList.toggle('on', engine===id);
+    });
+    $('engLocal').classList.toggle('on', engine==='local');
+    var cloud = isCloud();
+    $('keyRow').classList.toggle('show', cloud);
+    if(cloud){
+      var p=prov();
+      $('scanBtn').textContent='Scan with '+p.label;
+      syncKeyRow();
+      setEngine('', p.label+' reads each badge directly - highest accuracy');
+    } else {
+      $('scanBtn').textContent='Scan numbers';
+      setEngine('', 'Finds the badge on-device - works offline');
+    }
+    setProviderPref(engine);
+  }
+  CLOUD_IDS.forEach(function(id){
+    $('eng'+id.charAt(0).toUpperCase()+id.slice(1)).addEventListener('click', function(e){
+      // let the "Get free key" link open normally without changing selection oddly
+      if(e.target && e.target.classList.contains('eng-key')) { selectEngine(id); return; }
+      selectEngine(id);
+    });
+  });
   $('engLocal').addEventListener('click', function(){ selectEngine('local'); });
 
   // ---- AI key (inline) ----
   function showSaved(){ var s=$('keySaved'); s.classList.add('show'); setTimeout(function(){ s.classList.remove('show'); }, 1800); }
-  if(getKey()) $('apiKey').value=getKey();
   $('saveKey').addEventListener('click', function(){
-    setKey($('apiKey').value.trim()); showSaved(); toast(getKey()?'Key saved on this device':'Key cleared');
+    setKey($('apiKey').value.trim()); showSaved(); toast(getKey()?(prov().label+' key saved on this device'):'Key cleared');
   });
   $('apiKey').addEventListener('keydown', function(e){ if(e.key==='Enter'){ $('saveKey').click(); } });
 
@@ -1441,7 +1599,7 @@
   if(window.showDirectoryPicker) $('folderBtn').style.display='inline-flex';
 
   // initial
-  selectEngine('vision');
+  selectEngine(getProviderPref());
   updateBar();
 })();
 </script>
