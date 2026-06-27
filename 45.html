@@ -13685,7 +13685,7 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
     setModePill("Wi-Fi"); $("netPill").classList.add("on");
     $("resultOverlay").classList.remove("on");
     closeNet(); showScreen("game");
-    netSend(Object.assign({t:"init"}, netState()));
+    netSend({t:"init", s:serializeG()});
     startTurn();
   }
 
